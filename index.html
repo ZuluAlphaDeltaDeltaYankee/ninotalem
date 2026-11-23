@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Unity WebGL Player | Melatonin</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    <link rel="stylesheet" href="TemplateData/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <style>
+      html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
+      #unity-container.unity-desktop, #unity-container.unity-mobile { position: fixed; inset: 0; width: 100%; height: 100%; transform: none; }
+      #unity-canvas { display: block; width: 100% !important; height: 100% !important; background: #000; }
+      #unity-footer { display: none; }
+      #fps-counter { position: fixed; top: 0; left: 0; z-index: 2147483647; padding: 3px 5px; color: #fff; background: rgba(0,0,0,.55); font: 11px/1.2 monospace; pointer-events: none; user-select: none; }
+      #unity-loading-status { position: fixed; top: calc(50% + 92px); left: 50%; width: 280px; transform: translateX(-50%); color: #fff; font: 12px/1.4 sans-serif; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <div id="fps-counter">FPS: --</div>
+    <div id="unity-container" class="unity-desktop">
+      <canvas id="unity-canvas"></canvas>
+      <div id="unity-loading-bar">
+        <div id="unity-logo"></div>
+        <div id="unity-progress-bar-empty">
+          <div id="unity-progress-bar-full"></div>
+        </div>
+      </div>
+      <div id="unity-loading-status" role="status">Loading game...</div>
+      <div id="unity-mobile-warning">
+        WebGL builds are not supported on mobile devices.
+      </div>
+      <div id="unity-footer">
+        <div id="unity-webgl-logo"></div>
+        <div id="unity-fullscreen-button"></div>
+        <div id="unity-build-title">Melatonin</div>
+      </div>
+    </div>
+    <script src="chunk-loader.js"></script>
+    <script>
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/WebGL.loader.js";
+      var config = {
+        dataUrl: buildUrl + "/WebGL.data",
+        frameworkUrl: buildUrl + "/WebGL.framework.js",
+        codeUrl: buildUrl + "/WebGL.wasm",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "Half Asleep",
+        productName: "Melatonin",
+        productVersion: "1",
+      };
+
+      var container = document.querySelector("#unity-container");
+      var canvas = document.querySelector("#unity-canvas");
+      var loadingBar = document.querySelector("#unity-loading-bar");
+      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      var fullscreenButton = document.querySelector("#unity-fullscreen-button");
+      var mobileWarning = document.querySelector("#unity-mobile-warning");
+
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        container.className = "unity-mobile";
+        config.devicePixelRatio = 1;
+        mobileWarning.style.display = "block";
+        setTimeout(() => {
+          mobileWarning.style.display = "none";
+        }, 5000);
+      }
+      loadingBar.style.display = "block";
+
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      const loadingStatus = document.getElementById("unity-loading-status");
+      script.onload = async () => {
+        let release = () => {};
+        try {
+          release = await prepareUnityChunks(config, progress => {
+            progressBarFull.style.width = (progress * 65) + "%";
+            loadingStatus.textContent = "Loading game... " + Math.round(progress * 65) + "%";
+          });
+          const unityInstance = await createUnityInstance(canvas, config, progress => {
+            const percent = 65 + progress * 35;
+            progressBarFull.style.width = percent + "%";
+            loadingStatus.textContent = "Loading game... " + Math.round(percent) + "%";
+          });
+          release();
+          loadingBar.style.display = "none";
+          loadingStatus.style.display = "none";
+          startFpsCounter(unityInstance.Module);
+          fullscreenButton.onclick = () => unityInstance.SetFullscreen(1);
+        } catch (error) {
+          release();
+          loadingStatus.textContent = "Unable to load the game: " + error.message;
+          console.error(error);
+        }
+      };
+      script.onerror = () => {
+        loadingStatus.textContent = "Unable to load the game player. Please reload.";
+      };
+      document.body.appendChild(script);
+    </script>
+    <script>
+      function startFpsCounter(module) {
+        const counter = document.getElementById("fps-counter");
+        const previousPostMainLoop = module.postMainLoop;
+        let frames = 0;
+        let started = performance.now();
+        document.addEventListener("visibilitychange", () => {
+          frames = 0;
+          started = performance.now();
+        });
+        module.postMainLoop = function () {
+          if (previousPostMainLoop) previousPostMainLoop.call(module);
+          module.SetFrameRateLimit(300);
+          frames++;
+          const now = performance.now();
+          const elapsed = now - started;
+          if (elapsed >= 500) {
+            counter.textContent = "FPS: " + Math.round(frames * 1000 / elapsed);
+            frames = 0;
+            started = now;
+          }
+        };
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "files": [
+    {
+      "url": "Build/WebGL.data",
+      "size": 264208314,
+      "sha256": "79659a18eccc7299ca9953cea617b81bcdb6958ce7957e63d32e1455b318816c",
+      "parts": [
+        {
+          "url": "Build/chunks/WebGL.data.79659a18eccc.part001",
+          "size": 18000000
+        },
+        {
+          "url": "Build/chunks/WebGL.data.79659a18eccc.part002",
+          "size": 18000000
+        },
+        {
+          "url": "Build/chunks/WebGL.data.79659a18eccc.part003",
+          "size": 18000000
+        },
+        {
+          "url": "Build/chunks/WebGL.data.79659a18eccc.part004",
+          "size": 18000000
+        },
+        {
+          "url": "Build/chunks/WebGL.data.79659a18eccc.part005",
+          "size": 18000000
+        },
+        {
+          "url": "Build/chunks/WebGL.data.79659a18eccc.part006",
+          "size": 18000000
+        },
+        {
+          "url": "Build/chunks/WebGL.data.79659a18eccc.part007",
+          "size": 18000000
+        },
+        {
+          "url": "Build/chunks/WebGL.data.79659a18eccc.part008",
+          "size": 18000000
+        },
+        {
+          "url": "Build/chunks/WebGL.data.79659a18eccc.part009",
+          "size": 18000000
+        },
+        {
+          "url": "Build/chunks/WebGL.data.79659a18eccc.part010",
+          "size": 18000000
+        },
+        {
+          "url": "Build/chunks/WebGL.data.79659a18eccc.part011",
+          "size": 18000000
+        },
+        {
+          "url": "Build/chunks/WebGL.data.79659a18eccc.part012",
+          "size": 18000000
+        },
+        {
+          "url": "Build/chunks/WebGL.data.79659a18eccc.part013",
+          "size": 18000000
+        },
+        {
+          "url": "Build/chunks/WebGL.data.79659a18eccc.part014",
+          "size": 18000000
+        },
+        {
+          "url": "Build/chunks/WebGL.data.79659a18eccc.part015",
+          "size": 12208314
+        }
+      ]
+    }
+  ]
+}

@@ -48,6 +48,9 @@
         companyName: "Half Asleep",
         productName: "Melatonin",
         productVersion: "1",
+        // Start the heap big enough for the 264 MB data file so it doesn't
+        // repeatedly double-and-copy (old + new heap alive at once) during load.
+        TOTAL_MEMORY: 536870912,
       };
 
       var container = document.querySelector("#unity-container");
@@ -110,7 +113,6 @@
         });
         module.postMainLoop = function () {
           if (previousPostMainLoop) previousPostMainLoop.call(module);
-          module.SetFrameRateLimit(300);
           frames++;
           const now = performance.now();
           const elapsed = now - started;

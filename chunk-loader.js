@@ -10,7 +10,10 @@ async function prepareUnityChunks(config, onProgress) {
   const release = () => objectUrls.forEach(url => URL.revokeObjectURL(url));
   try {
     for (const file of manifest.files) {
-      const buffers = new Array(file.parts.length);
+      // Each chunk becomes its own Blob right away and the ArrayBuffer is dropped,
+      // so the browser can page the data out to disk instead of holding ~264 MB
+      // of JS heap plus a second copy when the final Blob is built.
+      const parts = new Array(file.parts.length);
       let next = 0;
       async function worker() {
         while (next < file.parts.length) {
@@ -20,16 +23,16 @@ async function prepareUnityChunks(config, onProgress) {
           if (!result.ok) throw new Error('Unable to download game data (' + result.status + ').');
           const data = await result.arrayBuffer();
           if (data.byteLength !== part.size) throw new Error('Incomplete game data. Please reload.');
-          buffers[index] = data;
-          loaded += data.byteLength;
+          parts[index] = new Blob([data]);
+          loaded += part.size;
           onProgress(total ? loaded / total : 1);
         }
       }
-      await Promise.all(Array.from({length: Math.min(3, file.parts.length)}, worker));
-      const size = buffers.reduce((sum, buffer) => sum + buffer.byteLength, 0);
+      await Promise.all(Array.from({length: Math.min(2, file.parts.length)}, worker));
+      const size = parts.reduce((sum, blob) => sum + blob.size, 0);
       if (size !== file.size) throw new Error('Incorrect game data size.');
       const type = file.url.endsWith('.wasm') ? 'application/wasm' : file.url.endsWith('.js') ? 'text/javascript' : 'application/octet-stream';
-      const url = URL.createObjectURL(new Blob(buffers, {type}));
+      const url = URL.createObjectURL(new Blob(parts, {type}));
       objectUrls.push(url);
       let matched = false;
       for (const key of ['dataUrl', 'codeUrl', 'frameworkUrl']) {
